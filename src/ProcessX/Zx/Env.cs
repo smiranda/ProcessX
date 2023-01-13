@@ -14,6 +14,8 @@ namespace Zx
         public static bool verbose { get; set; } = true;
 
         static string? _shell;
+        public static bool interactive;
+        private static int _headerCount = 0;
         public static string shell
         {
             get
@@ -156,6 +158,14 @@ namespace Zx
 
         public static async Task<string> process(string command, CancellationToken cancellationToken = default)
         {
+            if (verbose)
+            {
+                log("$ " + command, ConsoleColor.Green);
+            }
+            if (interactive)
+            {
+                _ = await Console.In.ReadLineAsync();
+            }
             return (await ProcessStartAsync(command, cancellationToken)).StdOut;
         }
 
@@ -188,9 +198,22 @@ namespace Zx
 
         public static async Task<string> question(string question)
         {
-            Console.WriteLine(question);
+            using (Env.color(ConsoleColor.Yellow))
+            {
+                Console.WriteLine(question);
+            }
             var str = await Console.In.ReadLineAsync();
             return str ?? "";
+        }
+
+        public static void header(object? value, ConsoleColor? color = default)
+        {
+            log($"[{_headerCount}] " + value, color);
+            if (interactive)
+            {
+                _ = Console.In.ReadLine();
+            }
+            _headerCount+=1;
         }
 
         public static void log(object? value, ConsoleColor? color = default)
@@ -241,8 +264,15 @@ namespace Zx
 
                     if (verbose && !forceSilcent)
                     {
-                        Console.WriteLine(item);
+                        using (Env.color(ConsoleColor.White))
+                        {
+                            Console.WriteLine(item);
+                        }
                     }
+                }
+                if (!isFirst && verbose && !forceSilcent)
+                {
+                    Console.WriteLine();
                 }
             });
 
@@ -263,8 +293,15 @@ namespace Zx
 
                     if (verbose && !forceSilcent)
                     {
-                        Console.WriteLine(item);
+                        using (Env.color(ConsoleColor.White))
+                        {
+                            Console.WriteLine(item);
+                        }
                     }
+                }
+                if (!isFirst && verbose && !forceSilcent)
+                {
+                    Console.WriteLine();
                 }
             });
 

@@ -39,6 +39,11 @@ namespace Zx
             if (command.StartsWith("cd ") || command.StartsWith("chdir "))
             {
                 var path = Regex.Replace(command, "^cd|^chdir", "").Trim();
+
+                if (Env.verbose)
+                {
+                    Env.log("$ " + command, ConsoleColor.Green);
+                }
                 Environment.CurrentDirectory = Path.Combine(Environment.CurrentDirectory, path);
                 return true;
             }
